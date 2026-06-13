@@ -34,3 +34,7 @@ class DashboardTests(APITestCase):
     def test_limit_param(self):
         res = self.client.get("/api/dashboard/top-products/?limit=1")
         self.assertEqual(len(res.data["top_products"]), 1)
+
+    def test_non_integer_limit_returns_400(self):
+        res = self.client.get("/api/dashboard/top-products/?limit=abc")
+        self.assertEqual(res.status_code, 400)

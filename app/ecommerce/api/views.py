@@ -76,7 +76,10 @@ class CheckoutView(APIView):
         response_items = []
         for item in items:
             product_id = item.get("product_id")
-            quantity = int(item.get("quantity", 1))
+            try:
+                quantity = int(item.get("quantity", 1))
+            except (TypeError, ValueError):
+                raise ValidationError({"quantity": "Must be an integer."})
             try:
                 product = Product.objects.get(id=product_id)
             except Product.DoesNotExist:
@@ -122,7 +125,10 @@ class TopProductsView(APIView):
     """Naive: full GROUP BY + SUM aggregation over order_items, no precomputation."""
 
     def get(self, request):
-        limit = int(request.query_params.get("limit", 10))
+        try:
+            limit = int(request.query_params.get("limit", 10))
+        except (TypeError, ValueError):
+            raise ValidationError({"limit": "Must be an integer."})
         rows = list(
             OrderItem.objects.values("product_id")
             .annotate(total_quantity=Sum("quantity"))

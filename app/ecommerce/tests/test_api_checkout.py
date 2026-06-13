@@ -45,3 +45,11 @@ class CheckoutTests(APITestCase):
         }
         res = self.client.post("/api/checkout/", payload, format="json")
         self.assertEqual(res.status_code, 400)
+
+    def test_non_integer_quantity_returns_400(self):
+        payload = {
+            "customer_id": self.customer.id,
+            "items": [{"product_id": self.p1.id, "quantity": "abc"}],
+        }
+        res = self.client.post("/api/checkout/", payload, format="json")
+        self.assertEqual(res.status_code, 400)
