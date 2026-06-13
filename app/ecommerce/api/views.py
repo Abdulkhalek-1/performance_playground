@@ -1,4 +1,7 @@
+from django.db.models import Q
+
 from rest_framework import generics
+from rest_framework.exceptions import ValidationError
 
 from ecommerce.api.serializers import ProductDetailSerializer, ProductListSerializer
 from ecommerce.models import Product
@@ -34,3 +37,17 @@ class ProductDetailView(generics.RetrieveAPIView):
 
     queryset = Product.objects.all()
     serializer_class = ProductDetailSerializer
+
+
+class ProductSearchView(generics.ListAPIView):
+    """Naive: ILIKE substring match on unindexed text columns -> sequential scan."""
+
+    serializer_class = ProductListSerializer
+
+    def get_queryset(self):
+        q = self.request.query_params.get("q")
+        if not q:
+            raise ValidationError({"q": "This query parameter is required."})
+        return Product.objects.filter(
+            Q(name__icontains=q) | Q(description__icontains=q)
+        ).order_by("id")
