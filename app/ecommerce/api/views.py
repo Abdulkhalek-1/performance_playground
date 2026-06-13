@@ -7,7 +7,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from ecommerce.api.serializers import ProductDetailSerializer, ProductListSerializer
+from ecommerce.api.serializers import OrderSerializer, ProductDetailSerializer, ProductListSerializer
 from ecommerce.models import Customer, Inventory, Order, OrderItem, Product
 
 ALLOWED_ORDERING = {"price", "-price", "name", "-name", "created_at", "-created_at"}
@@ -105,3 +105,14 @@ class CheckoutView(APIView):
             {"order_id": order.id, "total": str(total), "items": response_items},
             status=status.HTTP_201_CREATED,
         )
+
+
+class CustomerOrdersView(APIView):
+    """Naive: nested items serializer triggers N+1 across the customer's orders."""
+
+    def get(self, request, customer_id):
+        if not Customer.objects.filter(id=customer_id).exists():
+            raise ValidationError({"customer_id": "Unknown customer."})
+        orders = Order.objects.filter(customer_id=customer_id).order_by("-created_at")
+        data = OrderSerializer(orders, many=True).data
+        return Response({"customer_id": int(customer_id), "orders": data})

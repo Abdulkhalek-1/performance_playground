@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from ecommerce.models import Category, Product, ProductReview
+from ecommerce.models import Category, Order, OrderItem, Product, ProductReview
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -49,3 +49,17 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     def get_related_products(self, obj):
         qs = Product.objects.filter(category_id=obj.category_id).exclude(id=obj.id)[:5]
         return RelatedProductSerializer(qs, many=True).data
+
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = ["product_id", "quantity", "unit_price"]
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Order
+        fields = ["id", "status", "total", "created_at", "items"]
