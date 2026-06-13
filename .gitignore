@@ -5,3 +5,7 @@ db_data/
 *.log
 .venv/
 venv/
+docs/findings/baselines/*_stats.csv
+docs/findings/baselines/*_stats_history.csv
+docs/findings/baselines/*_failures.csv
+docs/findings/baselines/*_exceptions.csv

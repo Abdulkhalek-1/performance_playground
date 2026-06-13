@@ -41,5 +41,19 @@ services:
       db:
         condition: service_healthy
 
+  loadgen:
+    image: locustio/locust:2.32.4
+    depends_on:
+      - web
+    environment:
+      - MAX_PRODUCT_ID=${MAX_PRODUCT_ID:-100000}
+      - MAX_CUSTOMER_ID=${MAX_CUSTOMER_ID:-10000}
+    ports:
+      - "8089:8089"
+    volumes:
+      - ./loadtest:/mnt/locust
+      - ./docs/findings/baselines:/mnt/baselines
+    command: -f /mnt/locust/locustfile.py --host http://web:8000
+
 volumes:
   db_data:
