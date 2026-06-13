@@ -10,12 +10,20 @@ ALLOWED_HOSTS = ["*"]
 INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.auth",
+    "rest_framework",
     "ecommerce",
 ]
 
 MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
 ]
+
+# django-silk is opt-in: it instruments every request and would pollute load-test
+# numbers, so it is only enabled when DJANGO_SILK=1.
+SILK_ENABLED = os.environ.get("DJANGO_SILK", "0") == "1"
+if SILK_ENABLED:
+    INSTALLED_APPS.append("silk")
+    MIDDLEWARE.insert(0, "silk.middleware.SilkyMiddleware")
 
 ROOT_URLCONF = "config.urls"
 WSGI_APPLICATION = "config.wsgi.application"
@@ -31,6 +39,12 @@ DATABASES = {
     }
 }
 
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
+    "PAGE_SIZE": 20,
+}
+
+STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 USE_TZ = True
 TIME_ZONE = "UTC"

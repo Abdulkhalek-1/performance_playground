@@ -1,6 +1,7 @@
+from django.conf import settings
 from django.db import connection
 from django.http import JsonResponse
-from django.urls import path
+from django.urls import include, path
 
 
 def health(request):
@@ -12,4 +13,8 @@ def health(request):
 
 urlpatterns = [
     path("health/", health),
+    path("api/", include("ecommerce.api.urls")),
 ]
+
+if getattr(settings, "SILK_ENABLED", False):
+    urlpatterns += [path("silk/", include("silk.urls", namespace="silk"))]
