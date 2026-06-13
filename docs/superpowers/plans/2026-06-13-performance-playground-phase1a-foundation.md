@@ -136,7 +136,9 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - db_data:/var/lib/postgresql/data
+      # NOTE: postgres:18 changed the data dir mount point to /var/lib/postgresql
+      # (the old /var/lib/postgresql/data makes the container exit on startup).
+      - db_data:/var/lib/postgresql
       - ./postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
