@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from django.db.models import Q
+from django.db.models import Q, Sum
 
 from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError
@@ -116,3 +116,28 @@ class CustomerOrdersView(APIView):
         orders = Order.objects.filter(customer_id=customer_id).order_by("-created_at")
         data = OrderSerializer(orders, many=True).data
         return Response({"customer_id": int(customer_id), "orders": data})
+
+
+class TopProductsView(APIView):
+    """Naive: full GROUP BY + SUM aggregation over order_items, no precomputation."""
+
+    def get(self, request):
+        limit = int(request.query_params.get("limit", 10))
+        rows = list(
+            OrderItem.objects.values("product_id")
+            .annotate(total_quantity=Sum("quantity"))
+            .order_by("-total_quantity")[:limit]
+        )
+        product_ids = [r["product_id"] for r in rows]
+        names = dict(
+            Product.objects.filter(id__in=product_ids).values_list("id", "name")
+        )
+        top = [
+            {
+                "product_id": r["product_id"],
+                "name": names.get(r["product_id"]),
+                "total_quantity": r["total_quantity"],
+            }
+            for r in rows
+        ]
+        return Response({"top_products": top})
