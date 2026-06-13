@@ -1,0 +1,6 @@
+# Overlay that caps the db container to ~1 CPU / 512MB so bottlenecks appear fast.
+# Use: docker compose -f docker-compose.yml -f docker-compose.throttle.yml up -d
+services:
+  db:
+    cpus: 1.0
+    mem_limit: 512m
