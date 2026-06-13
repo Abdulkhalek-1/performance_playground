@@ -1,6 +1,6 @@
 from rest_framework import generics
 
-from ecommerce.api.serializers import ProductListSerializer
+from ecommerce.api.serializers import ProductDetailSerializer, ProductListSerializer
 from ecommerce.models import Product
 
 ALLOWED_ORDERING = {"price", "-price", "name", "-name", "created_at", "-created_at"}
@@ -27,3 +27,10 @@ class ProductListView(generics.ListAPIView):
         if ordering in ALLOWED_ORDERING:
             qs = qs.order_by(ordering)
         return qs
+
+
+class ProductDetailView(generics.RetrieveAPIView):
+    """Naive: reviews + related_products are extra queries with no prefetch."""
+
+    queryset = Product.objects.all()
+    serializer_class = ProductDetailSerializer
